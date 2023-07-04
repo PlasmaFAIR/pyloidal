@@ -131,7 +131,7 @@ def identify_cocos(
                     x,
                     minor_radii,
                 )
-                for x in (False, False)
+                for x in (True, False)
             )
         )
 
