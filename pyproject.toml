@@ -1,0 +1,47 @@
+[project]
+name = "pyloidal"
+description = "Python utilies for tokamak science."
+readme = "README.md"
+authors = [
+    {name = "Liam Pattinson", email = "liam.pattinson@york.ac.uk"}
+]
+license = {file = "LICENSE"}
+dynamic = ["version"]
+keywords = ["tokamak", "cocos"]
+classifiers = [
+    "Programming Language :: Python",
+    "Development Status :: 3 - Alpha",
+    "Natural Language :: English",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+requires-python = ">=3.8"
+dependencies = ["numpy ~= 1.24"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+lint = ["black", "flake8", "isort", "ruff"]
+
+[project.urls]
+Source = "https://github.com/PlasmaFAIR/pyloidal"
+Tracker = "https://github.com/PlasmaFAIR/pyloidal/issues"
+
+[build-system]
+requires = [
+    "setuptools >= 65",
+    "setuptools_scm[toml] >= 6.2",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "pyloidal/_version.py"
+fallback_version = "0.1.0"
+
+[tool.isort]
+profile = "black"
+
