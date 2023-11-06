@@ -26,7 +26,7 @@ First clone the repo, then:
 
 ```bash
 $ python3 -m pip install .[test]
-$ pytest
+$ pytest --cov=pyloidal ./tests
 ```
 
 ## License

@@ -21,11 +21,25 @@ classifiers = [
 ]
 
 requires-python = ">=3.8"
-dependencies = ["numpy ~= 1.24"]
+dependencies = [
+  "numpy ~= 1.24",
+]
 
 [project.optional-dependencies]
-test = ["pytest"]
-lint = ["black", "flake8", "isort", "ruff"]
+test = [
+  "pytest",
+  "coverage",
+  "pytest-cov",
+  "pytest-sugar",
+]
+lint = [
+  "black",
+  "isort",
+  "docformatter",
+  "ruff",
+  "refurb; python_version >= '3.10'",
+  "mypy",
+]
 
 [project.urls]
 Source = "https://github.com/PlasmaFAIR/pyloidal"
@@ -34,14 +48,25 @@ Tracker = "https://github.com/PlasmaFAIR/pyloidal/issues"
 [build-system]
 requires = [
     "setuptools >= 65",
-    "setuptools_scm[toml] >= 6.2",
+    "setuptools_scm >= 8.0.0",
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "pyloidal/_version.py"
+version_file = "src/pyloidal/_version.py"
 fallback_version = "0.1.0"
 
 [tool.isort]
 profile = "black"
 
+[tool.coverage.run]
+relative_files = true
+omit = [
+    "_version.py",
+]
+
+[tool.coverage.paths]
+source = [
+  "src/",
+  "*/site-packages",
+]
