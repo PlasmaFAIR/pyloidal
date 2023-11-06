@@ -148,10 +148,8 @@ def identify_cocos(
     if minor_radii is None:
         # Return both variants if not provided with minor radii
         return tuple(
-            itertools.chain.from_iterable(
-                sigma_to_cocos(sigma_bp, sigma_rpz, sigma_rtp, phi_by_2pi=x)
+                sigma_to_cocos(sigma_bp, sigma_rpz, sigma_rtp, psi_by_2pi=x)
                 for x in (True, False)
-            )
         )
 
     index = np.argmin(np.abs(safety_factor))
