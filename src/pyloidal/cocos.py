@@ -17,8 +17,7 @@ These functions were adapted from OMAS (Copyright MIT License, 2017, Orso Menegh
 
 from dataclasses import dataclass
 import itertools
-from typing import Dict, Optional, Tuple, Union, Literal
-from typing_extensions import TypeAlias
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -30,16 +29,25 @@ except ImportError:
     FloatArray = np.ndarray  # type: ignore
 
 
-Sign: TypeAlias = Literal[-1, +1]
-
-
 @dataclass(frozen=True)
 class Sigma:
     """Collection of signs of various quantities"""
 
-    B_poloidal: Sign
-    r_phi_z: Sign
-    r_theta_phi: Sign
+    B_poloidal: int
+    r_phi_z: int
+    r_theta_phi: int
+
+    def __post_init__(self):
+        if self.B_poloidal not in (-1, 1):
+            raise ValueError(
+                f"B_poloidal should be either 1 or -1, found {self.B_poloidal}"
+            )
+        if self.r_phi_z not in (-1, 1):
+            raise ValueError(f"r_phi_z should be either 1 or -1, found {self.r_phi_z}")
+        if self.r_theta_phi not in (-1, 1):
+            raise ValueError(
+                f"r_theta_phi should be either 1 or -1, found {self.r_theta_phi}"
+            )
 
 
 SIGMA_TO_COCOS = {
@@ -55,7 +63,7 @@ SIGMA_TO_COCOS = {
 
 
 def sigma_to_cocos(
-    sigma_bp: Sign, sigma_rpz: Sign, sigma_rtp: Sign, psi_by_2pi: bool = True
+    sigma_bp: int, sigma_rpz: int, sigma_rtp: int, psi_by_2pi: bool = True
 ) -> int:
     r"""
     We can (partially) determine the COCOS by checking the :math:`\sigma` quantities,
@@ -85,12 +93,6 @@ def sigma_to_cocos(
     int
         COCOS convention in use.
     """
-    if sigma_bp not in [-1, 1]:
-        raise ValueError(f"sigma_bp should be either 1 or -1, found {sigma_bp}")
-    if sigma_rpz not in [-1, 1]:
-        raise ValueError(f"sigma_rpz should be either 1 or -1, found {sigma_rpz}")
-    if sigma_rtp not in [-1, 1]:
-        raise ValueError(f"sigma_rtp should be either 1 or -1, found {sigma_rtp}")
 
     result = SIGMA_TO_COCOS[Sigma(sigma_bp, sigma_rpz, sigma_rtp)]
     return result if psi_by_2pi else result + 10
