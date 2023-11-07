@@ -59,6 +59,9 @@ fallback_version = "0.1.0"
 [tool.isort]
 profile = "black"
 
+[tool.ruff]
+select = ["E", "F", "W", "RUF"]
+
 [tool.coverage.run]
 relative_files = true
 omit = [

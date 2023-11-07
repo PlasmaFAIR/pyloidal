@@ -1,70 +1,71 @@
+from itertools import product
+from typing import Any, Dict, List, Tuple
+
 import numpy as np
 import pytest
 
 from pyloidal.cocos import identify_cocos, Transform
 
-# Create identify_cocos test cases for COCOS 1, 3, 5, 7
-# TODO include tests for negative/antiparallel b_toroidal and plasma_current
-# TODO include tests for multiple returns
 
-identify_cocos_tests = {}
-odds = {
-    1: {
-        "b_toroidal": 2.5,
-        "plasma_current": 1e6,
-        "poloidal_flux": np.linspace(0, 2, 3),
-        "safety_factor": np.linspace(0.5, 1.5, 3),
-        "clockwise_phi": False,
-        "minor_radii": np.linspace(0, 2, 3),
-    },
-    3: {
-        "b_toroidal": 2.5,
-        "plasma_current": 1e6,
-        "poloidal_flux": np.linspace(2, 0, 3),
-        "safety_factor": np.linspace(-0.5, -1.5, 3),
-        "clockwise_phi": False,
-        "minor_radii": np.linspace(0, 2, 3),
-    },
-    5: {
-        "b_toroidal": 2.5,
-        "plasma_current": 1e6,
-        "poloidal_flux": np.linspace(0, 2, 3),
-        "safety_factor": np.linspace(-0.5, -1.5, 3),
-        "clockwise_phi": False,
-        "minor_radii": np.linspace(0, 2, 3),
-    },
-    7: {
-        "b_toroidal": 2.5,
-        "plasma_current": 1e6,
-        "poloidal_flux": np.linspace(2, 0, 3),
-        "safety_factor": np.linspace(0.5, 1.5, 3),
-        "clockwise_phi": False,
-        "minor_radii": np.linspace(0, 2, 3),
-    },
-}
-identify_cocos_tests.update(odds)
-
-# Set clockwise_phi to True in these to get COCOS 2, 4, 6, 8
-evens = {}
-for cocos, kwargs in odds.items():
-    even_kwargs = kwargs.copy()
-    even_kwargs["clockwise_phi"] = True
-    evens[cocos + 1] = even_kwargs
-identify_cocos_tests.update(evens)
-# Multiply by factor of 2*pi to get COCOS 11 -> 18
-tens = {}
-for cocos, kwargs in identify_cocos_tests.items():
-    tens_kwargs = kwargs.copy()
-    # Note: can't use *= here, as some references are shared between tests
-    tens_kwargs["poloidal_flux"] = kwargs["poloidal_flux"] * (2 * np.pi)
-    tens_kwargs["safety_factor"] = kwargs["safety_factor"] * (2 * np.pi)
-    tens[cocos + 10] = tens_kwargs
-identify_cocos_tests.update(tens)
+ALL_COCOS = list(range(1, 9)) + list(range(11, 19))
 
 
-@pytest.mark.parametrize("expected_cocos,kwargs", [*identify_cocos_tests.items()])
-def test_identify_cocos(expected_cocos, kwargs):
-    assert identify_cocos(**kwargs) == (expected_cocos,)
+def _identify_cocos_inputs(
+    cocos: int,
+    antiparallel_field_and_current: bool,
+    use_minor_radii: bool,
+    use_clockwise_phi: bool,
+) -> Tuple[Dict[str, Any], Tuple[int, ...]]:
+    """Generates inputs for ``identify_cocos`` for a given COCOS"""
+    # Set up cocos 1 kwargs and modify accordingly
+    kwargs: Dict[str, Any] = dict(
+        b_toroidal=2.5,
+        plasma_current=1e6,
+        poloidal_flux=np.linspace(0, 2, 3),
+        safety_factor=np.linspace(0.5, 1.5, 3),
+    )
+    expected: List[int] = [cocos]
+
+    even_cocos = not bool(cocos % 2)
+    base_cocos = (cocos % 10) - even_cocos
+    if base_cocos in (3, 5):
+        kwargs["safety_factor"] *= -1
+    if base_cocos in (3, 7):
+        kwargs["poloidal_flux"] = kwargs["poloidal_flux"][::-1]
+    if antiparallel_field_and_current:
+        kwargs["b_toroidal"] *= -1
+        kwargs["safety_factor"] *= -1
+    if cocos >= 10:
+        kwargs["safety_factor"] *= 2 * np.pi
+        kwargs["poloidal_flux"] *= 2 * np.pi
+
+    if use_clockwise_phi:
+        kwargs["clockwise_phi"] = even_cocos
+    else:
+        expected.append(expected[0] + (-1 if even_cocos else 1))
+    if use_minor_radii:
+        kwargs["minor_radii"] = np.linspace(0, 2, 3)
+    else:
+        expected += [x + (-10 if cocos >= 10 else 10) for x in expected]
+
+    return kwargs, tuple(sorted(expected))
+
+
+@pytest.mark.parametrize(
+    "cocos,antiparallel,use_minor_radii,use_clockwise_phi",
+    product(ALL_COCOS, *(3 * [[True, False]])),
+)
+def test_identify_cocos(
+    cocos: int,
+    antiparallel: bool,
+    use_minor_radii: bool,
+    use_clockwise_phi: bool,
+):
+    kwargs, expected = _identify_cocos_inputs(
+        cocos, antiparallel, use_minor_radii, use_clockwise_phi
+    )
+    actual = identify_cocos(**kwargs)
+    np.testing.assert_array_equal(actual, expected)
 
 
 def test_cocos_transform():
@@ -73,5 +74,5 @@ def test_cocos_transform():
     for cocos in range(1, 9):
         assert Transform(cocos, cocos + 10).inv_psi != 1
         for cocos_add in (cocos + x * 10 for x in range(2)):
-            for key in ('b_toroidal', 'toroidal', 'poloidal', 'q'):
+            for key in ("b_toroidal", "toroidal", "poloidal", "q"):
                 assert getattr(Transform(cocos_add, cocos_add), key) == 1

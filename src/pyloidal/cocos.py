@@ -143,16 +143,18 @@ def identify_cocos(
 
     if clockwise_phi is None:
         return tuple(
-            itertools.chain.from_iterable(
-                identify_cocos(
-                    b_toroidal,
-                    plasma_current,
-                    safety_factor,
-                    poloidal_flux,
-                    x,
-                    minor_radii,
+            sorted(
+                itertools.chain.from_iterable(
+                    identify_cocos(
+                        b_toroidal,
+                        plasma_current,
+                        safety_factor,
+                        poloidal_flux,
+                        x,
+                        minor_radii,
+                    )
+                    for x in (True, False)
                 )
-                for x in (True, False)
             )
         )
 
@@ -169,8 +171,10 @@ def identify_cocos(
     if minor_radii is None:
         # Return both variants if not provided with minor radii
         return tuple(
-            sigma_to_cocos(sigma_bp, sigma_rpz, sigma_rtp, psi_by_2pi=x)
-            for x in (True, False)
+            sorted(
+                sigma_to_cocos(sigma_bp, sigma_rpz, sigma_rtp, psi_by_2pi=x)
+                for x in (True, False)
+            )
         )
 
     index = np.argmin(np.abs(safety_factor))
