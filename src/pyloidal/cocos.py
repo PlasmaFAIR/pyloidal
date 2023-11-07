@@ -21,7 +21,14 @@ from typing import Dict, Optional, Tuple, Union, Literal
 from typing_extensions import TypeAlias
 
 import numpy as np
-from numpy.typing import ArrayLike
+
+try:
+    from numpy.typing import NDArray
+
+    FloatArray = NDArray[np.float64]
+except ImportError:
+    FloatArray = np.ndarray  # type: ignore
+
 
 Sign: TypeAlias = Literal[-1, +1]
 
@@ -92,10 +99,10 @@ def sigma_to_cocos(
 def identify_cocos(
     b_toroidal: float,
     plasma_current: float,
-    safety_factor: ArrayLike,
-    poloidal_flux: ArrayLike,
+    safety_factor: FloatArray,
+    poloidal_flux: FloatArray,
     clockwise_phi: Optional[bool] = None,
-    minor_radii: Optional[ArrayLike] = None,
+    minor_radii: Optional[FloatArray] = None,
 ) -> Tuple[int, ...]:
     r"""
     Determine which COCOS coordinate system is in use. Returns all possible conventions.
