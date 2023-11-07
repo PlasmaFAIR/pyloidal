@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pyloidal.cocos import identify_cocos, cocos_transform
+from pyloidal.cocos import identify_cocos, Transform
 
 # Create identify_cocos test cases for COCOS 1, 3, 5, 7
 # TODO include tests for negative/antiparallel b_toroidal and plasma_current
@@ -66,11 +66,12 @@ identify_cocos_tests.update(tens)
 def test_identify_cocos(expected_cocos, kwargs):
     assert identify_cocos(**kwargs) == (expected_cocos,)
 
+
 def test_cocos_transform():
     # TODO should be parametrized
-    assert cocos_transform(1, 3)['poloidal'] == -1
+    assert Transform(1, 3).poloidal == -1
     for cocos in range(1, 9):
-        assert cocos_transform(cocos, cocos + 10)['1/psi'] != 1
+        assert Transform(cocos, cocos + 10).inv_psi != 1
         for cocos_add in (cocos + x * 10 for x in range(2)):
             for key in ('b_toroidal', 'toroidal', 'poloidal', 'q'):
-                assert cocos_transform(cocos_add, cocos_add)[key] == 1
+                assert getattr(Transform(cocos_add, cocos_add), key) == 1

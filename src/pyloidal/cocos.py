@@ -15,18 +15,55 @@ Throughout, we denote the coordinate systems in a tokamak with the following ter
 These functions were adapted from OMAS (Copyright MIT License, 2017, Orso Meneghini).
 """
 
+from dataclasses import dataclass
 import itertools
-from typing import Dict, Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import numpy as np
-from numpy.typing import ArrayLike
+
+try:
+    from numpy.typing import NDArray
+
+    FloatArray = NDArray[np.float64]
+except ImportError:
+    FloatArray = np.ndarray  # type: ignore
+
+
+@dataclass(frozen=True)
+class Sigma:
+    """Collection of signs of various quantities"""
+
+    B_poloidal: int
+    r_phi_z: int
+    r_theta_phi: int
+
+    def __post_init__(self):
+        if self.B_poloidal not in (-1, 1):
+            raise ValueError(
+                f"B_poloidal should be either 1 or -1, found {self.B_poloidal}"
+            )
+        if self.r_phi_z not in (-1, 1):
+            raise ValueError(f"r_phi_z should be either 1 or -1, found {self.r_phi_z}")
+        if self.r_theta_phi not in (-1, 1):
+            raise ValueError(
+                f"r_theta_phi should be either 1 or -1, found {self.r_theta_phi}"
+            )
+
+
+SIGMA_TO_COCOS = {
+    Sigma(+1, +1, +1): 1,
+    Sigma(+1, -1, +1): 2,
+    Sigma(-1, +1, -1): 3,
+    Sigma(-1, -1, -1): 4,
+    Sigma(+1, +1, -1): 5,
+    Sigma(+1, -1, -1): 6,
+    Sigma(-1, +1, +1): 7,
+    Sigma(-1, -1, +1): 8,
+}
 
 
 def sigma_to_cocos(
-    sigma_bp: int,
-    sigma_rpz: int,
-    sigma_rtp: int,
-    psi_by_2pi: bool = True,
+    sigma_bp: int, sigma_rpz: int, sigma_rtp: int, psi_by_2pi: bool = True
 ) -> int:
     r"""
     We can (partially) determine the COCOS by checking the :math:`\sigma` quantities,
@@ -56,34 +93,18 @@ def sigma_to_cocos(
     int
         COCOS convention in use.
     """
-    if sigma_bp != 1 and sigma_bp != -1:
-        raise ValueError(f"sigma_bp should be either 1 or -1, found {sigma_bp}")
-    if sigma_rpz != 1 and sigma_rpz != -1:
-        raise ValueError(f"sigma_rpz should be either 1 or -1, found {sigma_rpz}")
-    if sigma_rtp != 1 and sigma_rtp != -1:
-        raise ValueError(f"sigma_rtp should be either 1 or -1, found {sigma_rtp}")
 
-    sigma_to_cocos_dict = {
-        (+1, +1, +1): 1,  # +Bp, +rpz, +rtp
-        (+1, -1, +1): 2,  # +Bp, -rpz, +rtp
-        (-1, +1, -1): 3,  # -Bp, +rpz, -rtp
-        (-1, -1, -1): 4,  # -Bp, -rpz, -rtp
-        (+1, +1, -1): 5,  # +Bp, +rpz, -rtp
-        (+1, -1, -1): 6,  # +Bp, -rpz, -rtp
-        (-1, +1, +1): 7,  # -Bp, +rpz, +rtp
-        (-1, -1, +1): 8,  # -Bp, -rpz, +rtp
-    }
-    result = sigma_to_cocos_dict[(sigma_bp, sigma_rpz, sigma_rtp)]
+    result = SIGMA_TO_COCOS[Sigma(sigma_bp, sigma_rpz, sigma_rtp)]
     return result if psi_by_2pi else result + 10
 
 
 def identify_cocos(
     b_toroidal: float,
     plasma_current: float,
-    safety_factor: ArrayLike,
-    poloidal_flux: ArrayLike,
+    safety_factor: FloatArray,
+    poloidal_flux: FloatArray,
     clockwise_phi: Optional[bool] = None,
-    minor_radii: Optional[ArrayLike] = None,
+    minor_radii: Optional[FloatArray] = None,
 ) -> Tuple[int, ...]:
     r"""
     Determine which COCOS coordinate system is in use. Returns all possible conventions.
@@ -148,8 +169,8 @@ def identify_cocos(
     if minor_radii is None:
         # Return both variants if not provided with minor radii
         return tuple(
-                sigma_to_cocos(sigma_bp, sigma_rpz, sigma_rtp, psi_by_2pi=x)
-                for x in (True, False)
+            sigma_to_cocos(sigma_bp, sigma_rpz, sigma_rtp, psi_by_2pi=x)
+            for x in (True, False)
         )
 
     index = np.argmin(np.abs(safety_factor))
@@ -167,53 +188,48 @@ def identify_cocos(
     return (sigma_to_cocos(sigma_bp, sigma_rpz, sigma_rtp, psi_by_2pi=psi_by_2pi),)
 
 
-def cocos_coefficients(cocos: int) -> Dict[str, int]:
-    r"""Returns dictionary with COCOS coefficients given a COCOS index"""
-    # TODO Maybe have a pandas Dataframe with all the info written explicitly?
-    coeffs = {
-        "exp_bp": int(cocos >= 10),
-        "sigma_bp": 1 if cocos in (1, 2, 5, 6, 11, 12, 15, 16) else -1,
-        "sigma_rpz": 1 if cocos % 2 else -1,
-        "sigma_rtp": 1 if cocos in (1, 2, 7, 8, 11, 12, 17, 18) else -1,
-    }
-    coeffs["phi_clockwise"] = coeffs["sigma_rpz"] == -1
-    coeffs["theta_clockwise"] = cocos in (1, 4, 6, 7, 11, 14, 16, 17)
-    coeffs["psi_increasing"] = bool(coeffs["exp_bp"])
-    coeffs["sign_q"] = coeffs["sigma_rtp"]
-    coeffs["sign_pprime"] = -coeffs["sigma_bp"]
-    return coeffs
+class Coefficients:
+    def __init__(self, cocos: int):
+        self.exp_bp = int(cocos >= 10)
+        self.sigma_bp = 1 if cocos in (1, 2, 5, 6, 11, 12, 15, 16) else -1
+        self.sigma_rpz = 1 if cocos % 2 else -1
+        self.sigma_rtp = 1 if cocos in (1, 2, 7, 8, 11, 12, 17, 18) else -1
+        self.phi_clockwise = self.sigma_rpz == -1
+        self.theta_clockwise = cocos in (1, 4, 6, 7, 11, 14, 16, 17)
+        self.psi_increasing = bool(self.exp_bp)
+        self.sign_q = self.sigma_rtp
+        self.sign_pprime = -self.sigma_bp
 
 
-def cocos_transform(cocos_in: int, cocos_out: int) -> Dict[str, Union[int, float]]:
+class Transform:
     r"""
     Returns a dictionary with coefficients for how various quantities should by
     multiplied in order to go from ``cocos_in`` to ``cocos_out``.
     """
 
-    coeffs_in = cocos_coefficients(cocos_in)
-    coeffs_out = cocos_coefficients(cocos_out)
+    def __init__(self, cocos_in: int, cocos_out: int):
+        coeffs_in = Coefficients(cocos_in)
+        coeffs_out = Coefficients(cocos_out)
 
-    sigma_ip_eff = coeffs_in["sigma_rpz"] * coeffs_out["sigma_rpz"]
-    sigma_b0_eff = coeffs_in["sigma_rpz"] * coeffs_out["sigma_rpz"]
-    sigma_bp_eff = coeffs_in["sigma_bp"] * coeffs_out["sigma_bp"]
-    exp_bp_eff = coeffs_out["exp_bp"] - coeffs_in["exp_bp"]
-    sigma_rtp_eff = coeffs_in["sigma_rtp"] * coeffs_out["sigma_rtp"]
+        sigma_ip_eff = coeffs_in.sigma_rpz * coeffs_out.sigma_rpz
+        sigma_b0_eff = coeffs_in.sigma_rpz * coeffs_out.sigma_rpz
+        sigma_bp_eff = coeffs_in.sigma_bp * coeffs_out.sigma_bp
+        exp_bp_eff = coeffs_out.exp_bp - coeffs_in.exp_bp
+        sigma_rtp_eff = coeffs_in.sigma_rtp * coeffs_out.sigma_rtp
 
-    # Transform
-    transforms = {}
-    transforms["1/psi"] = sigma_ip_eff * sigma_bp_eff / (2 * np.pi) ** exp_bp_eff
-    transforms["d/dpsi"] = transforms["1/psi"]
-    transforms["ffprime"] = transforms["1/psi"]
-    transforms["pprime"] = transforms["1/psi"]
+        # Transform
+        self.inv_psi = sigma_ip_eff * sigma_bp_eff / (2 * np.pi) ** exp_bp_eff
+        self.dpsi = self.inv_psi
+        self.ffprime = self.inv_psi
+        self.pprime = self.inv_psi
 
-    transforms["toroidal"] = sigma_b0_eff
-    transforms["b_toroidal"] = transforms["toroidal"]
-    transforms["plasma_current"] = transforms["toroidal"]
-    transforms["f"] = transforms["toroidal"]
+        self.toroidal = sigma_b0_eff
+        self.b_toroidal = self.toroidal
+        self.plasma_current = self.toroidal
+        self.f = self.toroidal
 
-    transforms["poloidal"] = sigma_b0_eff * sigma_rtp_eff
-    transforms["b_poloidal"] = transforms["poloidal"]
+        self.poloidal = sigma_b0_eff * sigma_rtp_eff
+        self.b_poloidal = self.poloidal
 
-    transforms["psi"] = sigma_ip_eff * sigma_bp_eff * (2 * np.pi) ** exp_bp_eff
-    transforms["q"] = sigma_ip_eff * sigma_b0_eff * sigma_rtp_eff
-    return transforms
+        self.psi = sigma_ip_eff * sigma_bp_eff * (2 * np.pi) ** exp_bp_eff
+        self.q = sigma_ip_eff * sigma_b0_eff * sigma_rtp_eff
