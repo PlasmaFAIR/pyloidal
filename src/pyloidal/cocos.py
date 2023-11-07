@@ -167,7 +167,7 @@ def identify_cocos(
     sigma_rpz = -1 if clockwise_phi else 1
     sigma_rtp = sign_q * sign_plasma_current * sign_b_toroidal
 
-    # identify 2*pi term in poloidal_flux definition based on safety_factor estimate
+    # identify 2*pi term in poloidal_flux definition based on safety_factor estimate.
     if minor_radii is None:
         # Return both variants if not provided with minor radii
         return tuple(
