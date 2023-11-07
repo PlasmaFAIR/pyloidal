@@ -31,7 +31,7 @@ except ImportError:
 
 @dataclass(frozen=True)
 class Sigma:
-    """Collection of signs of various quantities"""
+    """Collection of signs of various quantities."""
 
     B_poloidal: int
     r_phi_z: int
