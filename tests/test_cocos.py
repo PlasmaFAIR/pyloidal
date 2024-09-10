@@ -51,7 +51,7 @@ def _identify_cocos_inputs(
 
 
 @pytest.mark.parametrize(
-    "cocos,antiparallel,use_minor_radii,use_clockwise_phi",
+    ("cocos", "antiparallel", "use_minor_radii", "use_clockwise_phi"),
     product(ALL_COCOS, *(3 * [[True, False]])),
 )
 def test_identify_cocos(
