@@ -4,7 +4,7 @@ from typing import Any
 import numpy as np
 import pytest
 
-from pyloidal.cocos import Transform, identify_cocos
+from pyloidal.cocos import Sigma, Transform, identify_cocos
 
 ALL_COCOS = list(range(1, 9)) + list(range(11, 19))
 
@@ -75,3 +75,14 @@ def test_cocos_transform():
         for cocos_add in (cocos + x * 10 for x in range(2)):
             for key in ("b_toroidal", "toroidal", "poloidal", "q"):
                 assert getattr(Transform(cocos_add, cocos_add), key) == 1
+
+
+@pytest.mark.parametrize("bad_input", ["B_poloidal", "r_phi_z", "r_theta_phi"])
+def test_sigma_bad_inputs(bad_input):
+    """Test that Sigma raises an excpetion when given an inputs not in ``(-1, 1)``"""
+    inputs = {
+        k: (0 if k == bad_input else 1)
+        for k in ("B_poloidal", "r_phi_z", "r_theta_phi")
+    }
+    with pytest.raises(ValueError, match=bad_input):
+        Sigma(**inputs)
