@@ -34,15 +34,14 @@ class Sigma:
 
     def __post_init__(self):
         if self.B_poloidal not in (-1, 1):
-            raise ValueError(
-                f"B_poloidal should be either 1 or -1, found {self.B_poloidal}"
-            )
+            msg = f"B_poloidal should be either 1 or -1, found {self.B_poloidal}"
+            raise ValueError(msg)
         if self.r_phi_z not in (-1, 1):
-            raise ValueError(f"r_phi_z should be either 1 or -1, found {self.r_phi_z}")
+            msg = f"r_phi_z should be either 1 or -1, found {self.r_phi_z}"
+            raise ValueError(msg)
         if self.r_theta_phi not in (-1, 1):
-            raise ValueError(
-                f"r_theta_phi should be either 1 or -1, found {self.r_theta_phi}"
-            )
+            msg = f"r_theta_phi should be either 1 or -1, found {self.r_theta_phi}"
+            raise ValueError(msg)
 
 
 SIGMA_TO_COCOS = {

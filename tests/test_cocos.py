@@ -17,12 +17,12 @@ def _identify_cocos_inputs(
 ) -> tuple[dict[str, Any], tuple[int, ...]]:
     """Generates inputs for ``identify_cocos`` for a given COCOS"""
     # Set up cocos 1 kwargs and modify accordingly
-    kwargs: dict[str, Any] = dict(
-        b_toroidal=2.5,
-        plasma_current=1e6,
-        poloidal_flux=np.linspace(0, 2, 3),
-        safety_factor=np.linspace(0.5, 1.5, 3),
-    )
+    kwargs: dict[str, Any] = {
+        "b_toroidal": 2.5,
+        "plasma_current": 1e6,
+        "poloidal_flux": np.linspace(0, 2, 3),
+        "safety_factor": np.linspace(0.5, 1.5, 3),
+    }
     expected: list[int] = [cocos]
 
     even_cocos = not bool(cocos % 2)
