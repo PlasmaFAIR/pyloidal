@@ -34,7 +34,6 @@ test = [
 ]
 lint = [
   "ruff",
-  "refurb",
   "mypy",
 ]
 
@@ -60,6 +59,8 @@ select = [
     "W", # pycodestyle warning
     "I", # isort
     "PT", # flake8-pytest-style
+    "UP", # pyupgrade
+    "FURB", # refurb
     "RUF", # ruff specific
 ]
 

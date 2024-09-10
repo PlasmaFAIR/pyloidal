@@ -1,5 +1,5 @@
 from itertools import product
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import numpy as np
 import pytest
@@ -14,16 +14,16 @@ def _identify_cocos_inputs(
     antiparallel_field_and_current: bool,
     use_minor_radii: bool,
     use_clockwise_phi: bool,
-) -> Tuple[Dict[str, Any], Tuple[int, ...]]:
+) -> tuple[dict[str, Any], tuple[int, ...]]:
     """Generates inputs for ``identify_cocos`` for a given COCOS"""
     # Set up cocos 1 kwargs and modify accordingly
-    kwargs: Dict[str, Any] = dict(
+    kwargs: dict[str, Any] = dict(
         b_toroidal=2.5,
         plasma_current=1e6,
         poloidal_flux=np.linspace(0, 2, 3),
         safety_factor=np.linspace(0.5, 1.5, 3),
     )
-    expected: List[int] = [cocos]
+    expected: list[int] = [cocos]
 
     even_cocos = not bool(cocos % 2)
     base_cocos = (cocos % 10) - even_cocos

@@ -17,7 +17,6 @@ These functions were adapted from OMAS (Copyright MIT License, 2017, Orso Menegh
 
 import itertools
 from dataclasses import dataclass
-from typing import Optional, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
@@ -99,9 +98,9 @@ def identify_cocos(
     plasma_current: float,
     safety_factor: FloatArray,
     poloidal_flux: FloatArray,
-    clockwise_phi: Optional[bool] = None,
-    minor_radii: Optional[FloatArray] = None,
-) -> Tuple[int, ...]:
+    clockwise_phi: bool | None = None,
+    minor_radii: FloatArray | None = None,
+) -> tuple[int, ...]:
     r"""
     Determine which COCOS coordinate system is in use. Returns all possible conventions.
 
