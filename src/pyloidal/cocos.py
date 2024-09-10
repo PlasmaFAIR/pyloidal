@@ -20,13 +20,9 @@ import itertools
 from typing import Optional, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
-try:
-    from numpy.typing import NDArray
-
-    FloatArray = NDArray[np.float64]
-except ImportError:
-    FloatArray = np.ndarray  # type: ignore
+FloatArray = NDArray[np.float64]
 
 
 @dataclass(frozen=True)
