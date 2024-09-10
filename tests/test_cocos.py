@@ -77,12 +77,13 @@ def test_cocos_transform():
                 assert getattr(Transform(cocos_add, cocos_add), key) == 1
 
 
-@pytest.mark.parametrize("bad_input", ["B_poloidal", "r_phi_z", "r_theta_phi"])
-def test_sigma_bad_inputs(bad_input):
+def test_sigma_bad_inputs():
     """Test that Sigma raises an excpetion when given an inputs not in ``(-1, 1)``"""
-    inputs = {
-        k: (0 if k == bad_input else 1)
-        for k in ("B_poloidal", "r_phi_z", "r_theta_phi")
-    }
-    with pytest.raises(ValueError, match=bad_input):
-        Sigma(**inputs)
+    with pytest.raises(ValueError, match="B_poloidal"):
+        Sigma(B_poloidal=2, r_phi_z=1, r_theta_phi=-1)
+
+    with pytest.raises(ValueError, match="r_phi_z"):
+        Sigma(B_poloidal=-1, r_phi_z=0, r_theta_phi=-1)
+
+    with pytest.raises(ValueError, match="r_theta_phi"):
+        Sigma(B_poloidal=-1, r_phi_z=1, r_theta_phi=-5)
