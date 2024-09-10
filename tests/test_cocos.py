@@ -1,11 +1,10 @@
 from itertools import product
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import numpy as np
 import pytest
 
-from pyloidal.cocos import identify_cocos, Transform
-
+from pyloidal.cocos import Transform, identify_cocos
 
 ALL_COCOS = list(range(1, 9)) + list(range(11, 19))
 
@@ -15,16 +14,16 @@ def _identify_cocos_inputs(
     antiparallel_field_and_current: bool,
     use_minor_radii: bool,
     use_clockwise_phi: bool,
-) -> Tuple[Dict[str, Any], Tuple[int, ...]]:
+) -> tuple[dict[str, Any], tuple[int, ...]]:
     """Generates inputs for ``identify_cocos`` for a given COCOS"""
     # Set up cocos 1 kwargs and modify accordingly
-    kwargs: Dict[str, Any] = dict(
-        b_toroidal=2.5,
-        plasma_current=1e6,
-        poloidal_flux=np.linspace(0, 2, 3),
-        safety_factor=np.linspace(0.5, 1.5, 3),
-    )
-    expected: List[int] = [cocos]
+    kwargs: dict[str, Any] = {
+        "b_toroidal": 2.5,
+        "plasma_current": 1e6,
+        "poloidal_flux": np.linspace(0, 2, 3),
+        "safety_factor": np.linspace(0.5, 1.5, 3),
+    }
+    expected: list[int] = [cocos]
 
     even_cocos = not bool(cocos % 2)
     base_cocos = (cocos % 10) - even_cocos
@@ -52,7 +51,7 @@ def _identify_cocos_inputs(
 
 
 @pytest.mark.parametrize(
-    "cocos,antiparallel,use_minor_radii,use_clockwise_phi",
+    ("cocos", "antiparallel", "use_minor_radii", "use_clockwise_phi"),
     product(ALL_COCOS, *(3 * [[True, False]])),
 )
 def test_identify_cocos(

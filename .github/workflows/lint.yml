@@ -20,14 +20,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install .[lint]
-      - name: Run Black
+      - name: Run ruff formatter
         if: always()
         run: |
-          black --check --verbose src tests
-      - name: Run Ruff
+          ruff format --check src tests
+      - name: Run ruff linter
         if: always()
         run: |
-          ruff check src
+          ruff check src tests
       - name: Run MyPy
         if: always()
         run: |

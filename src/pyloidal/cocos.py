@@ -15,9 +15,8 @@ Throughout, we denote the coordinate systems in a tokamak with the following ter
 These functions were adapted from OMAS (Copyright MIT License, 2017, Orso Meneghini).
 """
 
-from dataclasses import dataclass
 import itertools
-from typing import Optional, Tuple
+from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import NDArray
@@ -35,15 +34,14 @@ class Sigma:
 
     def __post_init__(self):
         if self.B_poloidal not in (-1, 1):
-            raise ValueError(
-                f"B_poloidal should be either 1 or -1, found {self.B_poloidal}"
-            )
+            msg = f"B_poloidal should be either 1 or -1, found {self.B_poloidal}"
+            raise ValueError(msg)
         if self.r_phi_z not in (-1, 1):
-            raise ValueError(f"r_phi_z should be either 1 or -1, found {self.r_phi_z}")
+            msg = f"r_phi_z should be either 1 or -1, found {self.r_phi_z}"
+            raise ValueError(msg)
         if self.r_theta_phi not in (-1, 1):
-            raise ValueError(
-                f"r_theta_phi should be either 1 or -1, found {self.r_theta_phi}"
-            )
+            msg = f"r_theta_phi should be either 1 or -1, found {self.r_theta_phi}"
+            raise ValueError(msg)
 
 
 SIGMA_TO_COCOS = {
@@ -99,9 +97,9 @@ def identify_cocos(
     plasma_current: float,
     safety_factor: FloatArray,
     poloidal_flux: FloatArray,
-    clockwise_phi: Optional[bool] = None,
-    minor_radii: Optional[FloatArray] = None,
-) -> Tuple[int, ...]:
+    clockwise_phi: bool | None = None,
+    minor_radii: FloatArray | None = None,
+) -> tuple[int, ...]:
     r"""
     Determine which COCOS coordinate system is in use. Returns all possible conventions.
 
