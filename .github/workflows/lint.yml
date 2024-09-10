@@ -27,7 +27,7 @@ jobs:
       - name: Run Ruff
         if: always()
         run: |
-          ruff src
+          ruff check src
       - name: Run MyPy
         if: always()
         run: |
