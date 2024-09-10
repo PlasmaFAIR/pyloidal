@@ -33,9 +33,6 @@ test = [
   "pytest-sugar",
 ]
 lint = [
-  "black",
-  "isort",
-  "docformatter",
   "ruff",
   "refurb",
   "mypy",
@@ -56,11 +53,14 @@ build-backend = "setuptools.build_meta"
 version_file = "src/pyloidal/_version.py"
 fallback_version = "0.1.0"
 
-[tool.isort]
-profile = "black"
-
 [tool.ruff.lint]
-select = ["E", "F", "W", "RUF"]
+select = [
+    "F", # Pyflakes
+    "E", # pycodestyle error
+    "W", # pycodestyle warning
+    "I", # isort
+    "RUF", # ruff specific
+]
 
 [tool.coverage.run]
 relative_files = true

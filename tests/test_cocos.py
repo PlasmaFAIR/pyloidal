@@ -4,8 +4,7 @@ from typing import Any, Dict, List, Tuple
 import numpy as np
 import pytest
 
-from pyloidal.cocos import identify_cocos, Transform
-
+from pyloidal.cocos import Transform, identify_cocos
 
 ALL_COCOS = list(range(1, 9)) + list(range(11, 19))
 

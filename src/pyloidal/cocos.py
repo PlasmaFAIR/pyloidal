@@ -15,8 +15,8 @@ Throughout, we denote the coordinate systems in a tokamak with the following ter
 These functions were adapted from OMAS (Copyright MIT License, 2017, Orso Meneghini).
 """
 
-from dataclasses import dataclass
 import itertools
+from dataclasses import dataclass
 from typing import Optional, Tuple
 
 import numpy as np
